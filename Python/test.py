@@ -1,1 +1,1 @@
-print("helloworld")
+help(enumerate)

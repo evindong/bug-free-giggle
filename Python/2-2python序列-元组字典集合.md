@@ -589,7 +589,508 @@ print('Time used:', time.time()-start)
 {'I', 'she', 'he'}
 ```
 
+# 再谈内置方法sorted()
+* 列表对象提供了sort()方法支持原地排序，而内置函数sorted()返回新的列表，并不对原列表进行任何修改。
+* sorted()方法可以对列表、元组、字典、range对象等进行排序。
+* 列表的sort()方法和内置函数sorted()都支持key参数实现复杂排序要求。
 
+```javascript{.line-numbers}
+>>> persons = [{'name':'Dong', 'age':37}, {'name':'Zhang', 'age':40}, {'name':'Li', 'age':50}, {'name':'Dong', 'age':43}]
+>>> print(persons)
+[{'age': 37, 'name': 'Dong'}, {'age': 40, 'name': 'Zhang'}, {'age': 50, 'name': 'Li'}, {'age': 43, 'name': 'Dong'}]
+#使用key来指定排序依据，先按姓名升序排序，姓名相同的按年龄降序排序
+>>> print(sorted(persons, key=lambda x:(x['name'], -x['age'])))
+[{'age': 43, 'name': 'Dong'}, {'age': 37, 'name': 'Dong'}, {'age': 50, 'name': 'Li'}, {'age': 40, 'name': 'Zhang'}]
+
+>>> phonebook = {'Linda':'7750', 'Bob':'9345', 'Carol':'5834'}
+>>> from operator import itemgetter
+>>> sorted(phonebook.items(), key=itemgetter(1)) #按字典中元素值进行排序
+[('Carol', '5834'), ('Linda', '7750'), ('Bob', '9345')]
+>>> sorted(phonebook.items(), key=itemgetter(0)) #按字典中元素的键进行排序
+[('Bob', '9345'), ('Carol', '5834'), ('Linda', '7750')]
+
+>>> gameresult = [['Bob', 95.0, 'A'], ['Alan', 86.0, 'C'], ['Mandy', 83.5, 'A'], ['Rob', 89.3, 'E']]
+>>> sorted(gameresult, key=itemgetter(0, 1)) #按姓名升序，姓名相同按分数升序排序
+[['Alan', 86.0, 'C'], ['Bob', 95.0, 'A'], ['Mandy', 83.5, 'A'], ['Rob', 89.3, 'E']]
+>>> sorted(gameresult, key=itemgetter(1, 0)) #按分数升序，分数相同的按姓名升序排序
+[['Mandy', 83.5, 'A'], ['Alan', 86.0, 'C'], ['Rob', 89.3, 'E'], ['Bob', 95.0, 'A']]
+>>> sorted(gameresult, key=itemgetter(2, 0)) #按等级升序，等级相同的按姓名升序排序
+[['Bob', 95.0, 'A'], ['Mandy', 83.5, 'A'], ['Alan', 86.0, 'C'], ['Rob', 89.3, 'E']]
+
+>>> gameresult = [{'name':'Bob', 'wins':10, 'losses':3, 'rating':75.0},
+                              {'name':'David', 'wins':3, 'losses':5, 'rating':57.0},
+                              {'name':'Carol', 'wins':4, 'losses':5, 'rating':57.0},
+                              {'name':'Patty', 'wins':9, 'losses':3, 'rating':72.8}]
+>>> sorted(gameresult, key=itemgetter('wins', 'name')) 
+#按'wins'升序，该值相同的按'name'升序排序
+[{'wins': 3, 'rating': 57.0, 'name': 'David', 'losses': 5}, {'wins': 4, 'rating': 57.0, 'name': 'Carol', 'losses': 5}, {'wins': 9, 'rating': 72.8, 'name': 'Patty', 'losses': 3}, {'wins': 10, 'rating': 75.0, 'name': 'Bob', 'losses': 3}]
+```
+
+根据另一个列表的值来对当前列表元素进行排序
+
+```javascript{.line-numbers}
+>>> list1 = ["what", "I'm", "sorting", "by"]
+>>> list2 = ["something", "else", "to", "sort"]
+>>> pairs = zip(list1, list2)
+>>> pairs = sorted(pairs)
+>>> pairs
+[("I'm", 'else'), ('by', 'sort'), ('sorting', 'to'), ('what', 'something')]
+>>> result = [x[1] for x in pairs]
+>>> result
+['else', 'sort', 'to', 'something']
+```
+
+# 复杂数据结构
+
+* 在解决实际问题时，还经常需要用到其他复杂的数据结构，如堆、栈、队列、树、图等等。
+* 有些结构Python已经提供，而有些则需要自己利用基本数据结构来实现。
+
+## 堆
+
+```javascript{.line-numbers}
+>>> import heapq                    #heapq和random是Python标准库
+>>> import random
+>>> data=range(10)
+>>> data
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+>>> random.choice(data)             #随机选择一个元素
+9
+>>> random.shuffle(data)            #随机打乱顺序
+>>> data
+[6, 1, 3, 4, 9, 0, 5, 2, 8, 7]
+>>> heap=[]
+>>> for n in data:                  #建堆
+    heapq.heappush(heap,n)
+>>> heap
+[0, 2, 1, 4, 7, 3, 5, 6, 8, 9]
+>>> heapq.heappush(heap,0.5)        #入堆，自动重建
+>>> heap
+[0, 0.5, 1, 4, 2, 3, 5, 6, 8, 9, 7]
+>>> heapq.heappop(heap)             #出堆，自动重建
+0
+>>> myheap=[1,2,3,5,7,8,9,4,10,333]
+>>> heapq.heapify(myheap)             #建堆
+>>> myheap
+[1, 2, 3, 4, 7, 8, 9, 5, 10, 333]
+>>> heapq.heapreplace(myheap,6)       #弹出最小元素，同时插入新元素
+1
+>>> myheap
+[2, 4, 3, 5, 7, 8, 9, 6, 10, 333]
+>>> heapq.nlargest(3, myheap)         #返回前3个最大的元素
+[333, 10, 9]
+>>> heapq.nsmallest(3, myheap)        #返回前3个最小的元素
+[2, 3, 4]
+```
+
+## 队列
+
+```javascript{.line-numbers}
+>>> import queue        #queue是Python标准库
+>>> q=queue.Queue()
+>>> q.put(0)            #入队
+>>> q.put(1)
+>>> q.put(2)
+>>> q.queue
+deque([0, 1, 2])
+>>> q.get()             #出队
+0
+>>> q.queue             #查看队列中的元素
+deque([1, 2])
+>>> q.get()
+1
+>>> q.queue
+deque([2])
+```
+
+### queue模块还提供了“后进先出”队列和优先级队列。
+
+```javascript{.line-numbers}
+>>> from queue import Queue    #LILO队列
+>>> q = Queue()                #创建队列对象
+>>> q.put(0)                   #在队列尾部插入元素
+>>> q.put(1)
+>>> q.put(2)
+>>> print(q.queue)             #查看队列中所有元素
+deque([0, 1, 2])
+>>> q.get()                    #返回并删除队列头部元素
+0
+>>> q.get()
+1
+
+>>> from queue import LifoQueue  #LIFO队列
+>>> q = LifoQueue()              #创建LIFO队列对象
+>>> q.put(1)                     #在队列尾部插入元素
+>>> q.put(2)
+>>> q.put(3)
+>>> q.queue                      #查看队列中所有元素
+[1, 2, 3]
+>>> q.get()                      #返回并删除队列尾部元素
+3
+>>> q.get()
+2
+>>> q.queue
+[1]
+>>> q.get()                      #对空队列调用get()方法会阻塞当前线程
+
+>>> from queue import PriorityQueue   #优先级队列
+>>> q = PriorityQueue()                         #创建优先级队列对象
+>>> q.put(3)                       #插入元素
+>>> q.put(8)                       #插入元素
+>>> q.put(100)
+>>> q.queue                       #查看优先级队列中所有元素
+[3, 8, 100]
+>>> q.put(1)                       #插入元素，自动调整优先级队列
+>>> q.put(2)
+>>> q.queue
+[1, 2, 100, 8, 3]
+>>> q.get()                        #返回并删除优先级最低的元素
+1
+>>> q.get()                        #请多执行几次该语句并观察返回的数据
+2
+```
+
+### Python标准库collections提供了双端队列deque
+
+```javascript{.line-numbers}
+>>> from collections import deque
+>>> q = deque(maxlen=5)               #创建双端队列
+>>> for item in [3, 5, 7, 9, 11]:          #添加元素
+	q.append(item)
+>>> q.append(13)                             #队列满，自动溢出
+>>> q.append(15)
+>>> q
+deque([7, 9, 11, 13, 15], maxlen=5)
+>>> q.appendleft(5)                          #从左侧添加元素，右侧自动溢出
+>>> q
+deque([5, 7, 9, 11, 13], maxlen=5)
+```
+
+### 封装列表自行定义队列
+
+```javascript{.line-numbers}
+# -*- coding:utf-8 -*-
+# Filename: myQueue.py
+# --------------------
+# Function description:
+# Queue of my own implementation
+# --------------------
+# Author: Dong Fuguo
+# QQ: 306467355
+# Email: dongfuguo2005@126.com
+#--------------------
+# Date: 2014-11-13, Updated on 2015-12-13
+# --------------------
+
+class myQueue:
+    def __init__(self, size = 10):
+        self._content = []
+        self._size = size
+        self._current = 0
+
+    def setSize(self, size):
+        if size < self._current:
+            #如果缩小队列，应删除后面的元素
+            for i in range(size, self._current)[::-1]:
+                del self._content[i]
+            self._current = size
+        self._size = size
+
+    def put(self, v):
+        if self._current < self._size:
+            self._content.append(v)
+            self._current = self._current+1
+        else:
+            print('The queue is full')
+
+    def get(self):
+        if self._content:
+            self._current = self._current-1
+            return self._content.pop(0)
+        else:
+            print('The queue is empty')
+
+    def show(self):
+        if self._content:
+            print(self._content)
+        else:
+            print('The queue is empty')
+        
+    def empty(self):
+        self._content = []
+
+    def isEmpty(self):
+        if not self._content:
+            return True
+        else:
+            return False
+
+    def isFull(self):
+        if self._current == self._size:
+            return True
+        else:
+            return False
+
+if __name__ == '__main__':
+    print('Please use me as a module.')
+```
+
+### 自定义双端队列的用法
+
+```javascript{.line-numbers}
+>>> from myDeque import myDeque  #导入自定义双端队列类
+>>> q = myDeque(range(5))               #创建双端队列对象
+>>> q
+myDeque([0, 1, 2, 3, 4], maxlen=10)
+>>> q.appendLeft(-1)                          #在队列左侧入队
+>>> q.appendRight(5)                         #在队列右侧入队
+>>> q
+myDeque([-1, 0, 1, 2, 3, 4, 5], maxlen=10)
+>>> q.popLeft()                                   #在队列左侧出队
+-1
+>>> q.popRight()                                 #在队列右侧出队
+5
+>>> q.reverse()                     #元素翻转
+>>> q
+myDeque([4, 3, 2, 1, 0], maxlen=10)
+>>> q.isEmpty()                     #测试队列是否为空
+False
+>>> q.rotate(-3)                      #元素循环左移
+>>> q
+myDeque([1, 0, 4, 3, 2], maxlen=10)
+>>> q.setSize(20)                  #改变队列大小
+>>> q
+myDeque([1, 0, 4, 3, 2], maxlen=20)
+>>> q.clear()                          #清空队列元素
+>>> q
+myDeque([], maxlen=20)
+>>> q.isEmpty()
+True
+```
+
+## 栈
+
+* 栈是一种“后进先出（LIFO）”或“先进后出（FILO）”的数据结构。
+* Python列表本身就可以实现栈结构的基本操作。例如，列表对象的append()方法是在列表尾部追加元素，类似于入栈操作；pop()方法默认是弹出并返回列表的最后一个元素，类似于出栈操作。
+* 但是直接使用Python列表对象模拟栈操作并不是很方便，例如当列表为空时再执行pop()出栈操作时则会抛出一个不很友好的异常；另外，也无法限制栈的大小。
+
+### 可以直接使用列表来实现栈结构
+
+```javascript{.line-numbers}
+>>> myStack = []
+>>> myStack.append(3)
+>>> myStack.append(5)
+>>> myStack.append(7)
+>>> myStack
+[3, 5, 7]
+>>> myStack.pop()
+7
+>>> myStack.pop()
+5
+>>> myStack.pop()
+3
+>>> myStack.pop()
+出错
+```
+
+### 封装列表实现栈结构
+
+```javascript{.line-numbers}
+class Stack:
+    def __init__(self, size = 10):
+        self._content = []                 #使用列表存放栈的元素
+        self._size = size                  #初始栈大小
+        self._current = 0                  #栈中元素个数初始化为0
+        
+    def empty(self):
+        self._content = []
+        self._current = 0
+        
+    def isEmpty(self):
+        if not self._content:
+            return True
+        else:
+            return False
+    def setSize(self, size):
+        #如果缩小栈空间，则删除指定大小之后的已有元素
+        if size < self._current:
+            for i in range(size, self._current)[::-1]:
+                del self._content[i]
+            self._current = size
+        self._size = size
+    
+    def isFull(self):
+        if self._current == self._size:
+            return True
+        else:
+            return False
+
+                def push(self, v):
+        if len(self._content) < self._size:
+            self._content.append(v)
+            self._current = self._current+1  #栈中元素个数加1
+        else:
+            print('Stack Full!')
+            
+    def pop(self):
+        if self._content:
+            self._current = self._current-1  #栈中元素个数减1
+            return self._content.pop()
+        else:
+            print('Stack is empty!')
+                def show(self):
+        print(self._content)
+
+    def showRemainderSpace(self):
+        print('Stack can still PUSH ', self._size-self._current, ' elements.')
+
+if __name__ == '__main__':
+    print('Please use me as a module.')
+```
+
+### 自定义栈的用法
+
+```javascript{.line-numbers}
+>>> import Stack
+>>> x = Stack.Stack()
+>>> x.push(1)
+>>> x.push(2)
+>>> x.show()
+[1, 2]
+>>> x.pop()
+2
+>>> x.show()
+[1]
+>>> x.showRemainderSpace()
+Stack can still PUSH  9  elements.
+>>> x.isEmpty()
+False
+>>> x.isFull()
+False
+```
+
+可直接使用列表来实现：
+
+```javascript{.line-numbers}
+>>> linkTable = []
+>>> linkTable.append(3)
+>>> linkTable.append(5)
+>>> linkTable
+[3, 5]
+>>> linkTable.insert(1,4)
+>>> linkTable
+[3, 4, 5]
+>>> linkTable.remove(linkTable[1])
+>>> linkTable
+[3, 5]
+```
+## 二叉树
+
+使用代码中的类BinaryTree创建的对象不仅支持二叉树的创建以及前序遍历、中序遍历与后序遍历等三种常用的二叉树节点遍历方式，还支持二叉树中任意“子树”的遍历。
+
+```javascript{.line-numbers}
+class BinaryTree:
+    def __init__(self, value):
+        self.__left = None
+        self.__right =  None
+        self.__data = value
+        
+    def insertLeftChild(self, value):  #创建左子树
+        if self.__left:
+            print('__left child tree already exists.')
+        else:
+            self.__left = BinaryTree(value)
+            return self.__left
+                def insertRightChild(self, value): #创建右子树
+        if self.__right:
+            print('Right child tree already exists.')
+        else:
+            self.__right = BinaryTree(value)
+            return self.__right
+        
+    def show(self):
+        print(self.__data)
+
+    def preOrder(self):                 #前序遍历
+        print(self.__data)                #输出根节点的值
+        if self.__left:
+            self.__left.preOrder()      #遍历左子树
+        if self.__right:
+            self.__right.preOrder()    #遍历右子树
+
+    def postOrder(self):                 #后序遍历
+        if self.__left:
+            self.__left.postOrder()
+        if self.__right:
+            self.__right.postOrder()
+        print(self.__data)
+
+    def inOrder(self):                 #中序遍历
+        if self.__left:
+            self.__left.inOrder()
+        print(self.__data)
+        if self.__right:
+            self.__right.inOrder()
+
+if __name__ == '__main__':
+    print('Please use me as a module.')
+
+```
+自定义二叉树用法
+
+```javascript{.line-numbers}
+>>> import BinaryTree
+>>> root = BinaryTree.BinaryTree('root')
+>>> b = root.insertRightChild('B')
+>>> a = root.insertLeftChild('A')
+>>> c = a.insertLeftChild('C')
+>>> d = c.insertRightChild('D')
+>>> e = b.insertRightChild('E')
+>>> f = e.insertLeftChild('F')
+>>> root.inOrder()
+C  D  A  root  B  F  E
+>>> root.postOrder()
+D  C  A  F  E  B  root
+>>> b.inOrder()
+B  F  E
+```
+
+## 有向图
+
+```javascript{.line-numbers}
+def searchPath(graph, start, end):
+    results = []
+    __generatePath(graph, [start], end, results)
+    results.sort(key = lambda x:len(x))
+    return results
+
+def __generatePath(graph, path, end, results):
+    current = path[-1]
+    if current == end:
+        results.append(path)
+    else:
+        for n in graph[current]:
+            if n not in path:
+                #path.append(n)
+                __generatePath(graph, path + [n], end, results)
+
+def showPath(results):
+    print('The path from ',results[0][0], ' to ', results[0][-1], ' is:')
+    for path in results:
+        print(path)
+        
+if __name__ == '__main__':
+    graph = {'A':['B', 'C', 'D'],
+                   'B':['E'],
+                   'C':['D', 'F'],
+                   'D':['B', 'E', 'G'],
+                   'E':['D'],
+                   'F':['D', 'G'],
+                   'G':['E']}
+    r1 = searchPath(graph, 'A', 'D')
+    showPath(r1)
+    r2 = searchPath(graph, 'A', 'E')
+    showPath(r2)
+```
 
 
 

@@ -526,7 +526,7 @@ NameError: name 'raw_input' is not defined
 一个好的、可读性强的程序一般包含30%以上的注释。常用的注释方式主要有两种：
 * 以#开始，表示本行#之后的内容为注释
 * 包含在一对三引号'''...'''或"""..."""之间且不属于任何语句的内容将被解释器认为是注释
-* 在IDLE开发环境中，可以通过下面的操作快速注释/解除注释大段内容：FormatComment Out Region/Uncomment Region
+* 在IDLE开发环境中，可以通过下面的操作快速注释/解除注释大段内容：Format Comment Out Region/Uncomment Region
 
 （3）每个import只导入一个模块
 

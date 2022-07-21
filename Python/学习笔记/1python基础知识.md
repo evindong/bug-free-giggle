@@ -26,7 +26,7 @@
 * python 属于**强类型编程语言**，python解释器会根据赋值或运算来自动推断变量类型。
 * python还是一种**动态类型语言**，变量的类型也是可以随时变化的。
 
-```
+``` javascript{.line-numbers}
 >>> x =3
 >>> print(type(x))
 <class 'int'>
@@ -153,7 +153,7 @@ Python内置支持复数类型。
 
 #### 字符串格式化
 
-```
+``` javascript{.line-numbers}
 >>> a = 3.6674
 >>> '%7.3f' % a
 '  3.667'
@@ -167,7 +167,8 @@ Python内置支持复数类型。
 ![](images/2022-07-13-14-36-02.png)
 
 用法如下
-```
+
+``` javascript{.line-numbers}
 >>> print('Hello\nWorld')   #包含转义字符的字符串
 Hello
 World
@@ -178,8 +179,10 @@ A
 >>> print('我是\u8463\u4ed8\u56fd')  #四位十六进制数表示的Unicode字符
 我是董付国
 ```
+
  字符串界定符前面加字母r表示原始字符串，其中的特殊字符不进行转义，但字符串的最后一个字符不能是\。原始字符串主要用于正则表达式、文件路径或者URL的场合。
-```
+ 
+``` javascript{.line-numbers}
 >>> path = 'C:\Windows\notepad.exe'
 >>> print(path)                     #字符\n被转义为换行符
 C:\Windows
